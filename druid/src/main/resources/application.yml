@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/test?characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    #注意，我这里使用的mysql数据库的版本是8.x的，如果是是5.x的，请改为com.mysql.jdbc.Driver，同时对应更改pom.xml里的依赖
+    driver-class-name: com.mysql.jdbc.Driver
+    #Druid数据库连接池
+    type: com.alibaba.druid.pool.DruidDataSource
+    #其他配置
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    filters: stat,wall,log4j
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+server:
+  port: 8090
