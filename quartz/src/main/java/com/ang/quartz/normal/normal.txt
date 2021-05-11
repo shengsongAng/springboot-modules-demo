@@ -1,1 +1,4 @@
-quartz使用的一般方式
+quartz使用的一般方式（没有集成springboot）
+
+默认使用内存方式，如果想用持久化的话，参考：
+https://blog.csdn.net/u012768459/article/details/73826189
