@@ -1,0 +1,74 @@
+springboot集成quartz
+
+1.pom依赖
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-quartz</artifactId>
+</dependency>
+
+2.继承QuartzJobBean并重写executeInternal方法，与之前的实现Job接口类似
+public class HiJob extends QuartzJobBean {
+    @Override
+    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        myService.printHelloWorld();
+        System.out.println("Hi! :" + jobExecutionContext.getJobDetail().getKey());
+    }
+}
+
+3.添加配置类
+@Configuration
+public class QuartzConfig {
+    @Bean
+    public JobDetail myJobDetail(){
+        JobDetail jobDetail = JobBuilder.newJob(HiJob.class)
+                .withIdentity("myJob1","myJobGroup1")
+                //JobDataMap可以给任务execute传递参数
+                .usingJobData("job_param","job_param1")
+                .storeDurably()
+                .build();
+        return jobDetail;
+    }
+    @Bean
+    public Trigger myTrigger(){
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .forJob(myJobDetail())
+                .withIdentity("myTrigger1","myTriggerGroup1")
+                .usingJobData("job_trigger_param","job_trigger_param1")
+                .startNow()
+                //.withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(5).repeatForever())
+                .withSchedule(CronScheduleBuilder.cronSchedule("0/5 * * * * ? 2018"))
+                .build();
+        return trigger;
+    }
+}
+
+4.yml
+spring:
+  #配置数据源
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/testquartz?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: password
+  quartz:
+    #持久化到数据库方式
+    job-store-type: jdbc
+    initialize-schema: embedded
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: MyScheduler
+            instanceId: AUTO
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 10000
+            useProperties: false
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 10
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
